@@ -68,11 +68,16 @@ def main(urls,logfileLocation):
 
 if __name__ == '__main__':
     # First argument needs to be a file with a list of URIs
+    # Second the logfile to use
     try:
         if sys.argv[1:]:
             with open(sys.argv[1],"r") as inFile:
                 data = inFile.read().split('\n')
-            main(data,sys.argv[2])
+
+            if len(sys.argv) > 2:
+                main(data,sys.argv[2])
+            else:
+                print("Need to have a logfile location")
         else:
             print("call with a text file of URLs and the logfile path")
     except Exception as e:
