@@ -13,6 +13,7 @@ The log files will then be used to trigger if there is a problem to provide down
 
 import pickle, os, sys, logging
 import httplib2
+from datetime import datetime
 
 def get_site_status(url):
     """
@@ -21,11 +22,22 @@ def get_site_status(url):
     :return: up / down
     """
     repCode=None
+
+    if url is "":
+        return("Not Valid")
+
     try:
+        t1 = datetime.now()
         response = get_response(url)
+        t2 = datetime.now()
+
+        elapsed = t2-t1
+
+        retTime = elapsed.microseconds
+
         repCode = getattr(response, 'status')
 
-        logResponse(url,repCode,"")
+        logResponse(url,repCode,"",str(retTime))
 
         if repCode == 200:
             return 'up'
@@ -34,7 +46,7 @@ def get_site_status(url):
         pass
     return 'down'
 
-def logResponse(url=None,respCode=None,error=None):
+def logResponse(url=None,respCode=None,error=None,elapsed=None):
     """
     Log out to file
     :param url: the called URL
@@ -43,9 +55,9 @@ def logResponse(url=None,respCode=None,error=None):
     :return:
     """
     if respCode <> 200:
-        logging.error('URL: %s, Response: %s Error: %s' % (url, respCode, error))
+        logging.error('URL: %s, Response: %s, Error: %s, Elapsed: %s' % (url, respCode, error,elapsed))
     else:
-        logging.info('URL: %s, Response: %s OK: %s' % (url, respCode,error))
+        logging.info('URL: %s, Response: %s, OK: %s, Elapsed: %s' % (url, respCode,error,elapsed))
 
 def get_response(url):
     """
@@ -54,7 +66,7 @@ def get_response(url):
     :return: connection object
     """
 
-    conn = httplib2.Http()
+    conn = httplib2.Http(ca_certs="/etc/ssl/certs/ca-bundle.crt",disable_ssl_certificate_validation=True)
     return conn.request(url)[0]
 
 def main(urls,logfileLocation):
